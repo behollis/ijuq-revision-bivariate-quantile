@@ -632,15 +632,21 @@ def main():
     '''
     
     loc = [ 44, 30 ]
-    level = 6
+    level = 0
     
-    tvars = [ 'NO3','temp','salt','zoo','NH4','detritus','CHL', 'CELLNH4', 'CELLNO3']
+    tvars = [ 'NO3','temp','salt','zoo','NH4','detritus','CHL', 'CELLNH4', 'CELLNO3', 'vx', 'vy' ]
     vdict = dict()
     
     for v in tvars:
         vdict[v] = np.zeros(shape=600)
         for mem in range(0,600):
-            vdict[v][mem] = netFile.variables[ v ][ mem ][ loc[0] ][ loc[1] ][ level ]
+            if v is 'vx':
+                vdict[v][mem] = netFile.variables[ 'vclin' ][ mem ][ loc[0] ][ loc[1] ][ level ][ 0 ]
+            elif v is 'vy':
+                vdict[v][mem] = netFile.variables[ 'vclin' ][ mem ][ loc[0] ][ loc[1] ][ level ][ 1 ]
+            else:
+                vdict[v][mem] = netFile.variables[ v ][ mem ][ loc[0] ][ loc[1] ][ level ]
+            
             
     
     for v1 in tvars:
@@ -648,7 +654,7 @@ def main():
             
             ret = scipy.stats.spearmanr(vdict[v1], vdict[v2], axis=0) 
             pval = ret[1] 
-            print 'p-value for {0} and {1} = {2}'.format( v1, v2, pval)
+            print 'coeff / p-value for {0} and {1} = {2}'.format( v1, v2, ret)
 
             if pval > 0.05:
                 print '\tUNCORRELATED!'
