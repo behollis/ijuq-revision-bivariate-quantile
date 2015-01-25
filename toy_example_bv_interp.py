@@ -13,7 +13,7 @@ import mpl_toolkits.mplot3d.axes3d as p3
 import math
 #import gaussian_fit
 import sum_of_gaussians_interpolation as sog
-from netcdf_reader import *
+from netcdf_reader.py import *
 #from spline_cdf_curve_morphing import *
 from mayavi.mlab import *
 import mayavi

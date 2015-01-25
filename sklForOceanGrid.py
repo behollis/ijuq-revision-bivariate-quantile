@@ -16,7 +16,7 @@ import pylab as p
 import mpl_toolkits.mplot3d.axes3d as p3
 import math
 import sum_of_gaussians_interpolation as sog
-from netcdf_reader import *
+from netcdf_reader.py import *
 from mayavi.mlab import *
 import mayavi
 from peakfinder import *

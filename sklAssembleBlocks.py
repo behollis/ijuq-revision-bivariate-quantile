@@ -4,7 +4,7 @@
 PROJ_PATH = '/home/behollis/thesis_code/code/interpRevProj/src/'
 import sys
 sys.path.append(PROJ_PATH)
-from netcdf_reader import *
+from netcdf_reader.py import *
 import glob
 import numpy as np
 import matplotlib.pyplot as plt
