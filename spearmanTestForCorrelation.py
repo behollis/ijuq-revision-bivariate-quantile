@@ -632,14 +632,14 @@ def main():
     '''
     
     loc = [ 44, 30 ]
-    level =  
+    level = 6
     
     tvars = [ 'NO3','temp','salt','zoo','NH4','detritus','CHL', 'CELLNH4', 'CELLNO3']
     vdict = dict()
     
     for v in tvars:
         vdict[v] = np.zeros(shape=600)
-        for mem in range(0,60
+        for mem in range(0,600):
             vdict[v][mem] = netFile.variables[ v ][ mem ][ loc[0] ][ loc[1] ][ level ]
             
     
@@ -651,7 +651,7 @@ def main():
             print 'p-value for {0} and {1} = {2}'.format( v1, v2, pval)
 
             if pval > 0.05:
-                print '\tUNCORRELATED'
+                print '\tUNCORRELATED!'
             
            
             
