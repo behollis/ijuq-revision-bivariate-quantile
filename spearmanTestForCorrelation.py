@@ -586,6 +586,16 @@ References
 [CRCProbStat2000]    (1, 2) Zwillinger, D. and Kokoska, S. (2000). 
 CRC Standard Probability and Statistics Tables and Formulae. Chapman & Hall: New York. 2000.
 
+From http://en.wikipedia.org/wiki/P-value#Definition_and_interpretation:
+The smaller the p-value, the larger the significance because it tells 
+the investigator that the hypothesis under consideration may not adequately 
+explain the observation. The hypothesis H is rejected if any of these probabilities 
+is less than or equal to a small, fixed, but arbitrarily pre-defined, threshold value 
+\alpha, which is referred to as the level of significance. Unlike the p-value, the 
+\alpha level is not derived from any observational data nor does it depend on the 
+underlying hypothesis; the value of \alpha is instead determined based on the 
+consensus of the research community that the investigator is working in.
+
 
 '''
 
@@ -605,8 +615,7 @@ def main():
     #float salt(time, tlat, tlon, outlev) ;
     netFile = netCDF4.Dataset(pe_dif_sep2_98_file)
 
-    loc = [ 44, 30 ]
-    level = 1
+    
     
     '''
     <type 'netCDF4.Variable'>
@@ -622,13 +631,52 @@ def main():
     filling off
     '''
     
+    loc = [ 44, 30 ]
+    level =  
+    
+    tvars = [ 'NO3','temp','salt','zoo','NH4','detritus','CHL', 'CELLNH4', 'CELLNO3']
+    vdict = dict()
+    
+    for v in tvars:
+        vdict[v] = np.zeros(shape=600)
+        for mem in range(0,60
+            vdict[v][mem] = netFile.variables[ v ][ mem ][ loc[0] ][ loc[1] ][ level ]
+            
+    
+    for v1 in tvars:
+        for v2 in tvars:
+            
+            ret = scipy.stats.spearmanr(vdict[v1], vdict[v2], axis=0) 
+            pval = ret[1] 
+            print 'p-value for {0} and {1} = {2}'.format( v1, v2, pval)
+
+            if pval > 0.05:
+                print '\tUNCORRELATED'
+            
+           
+            
+            
+            
+    
+    
+    
+    '''
     temp = np.zeros(shape=600); salt = np.zeros(shape=600)
+    uncorr_trial = np.zeros(shape=600)
     for mem in range(0,600):
         temp[mem] = netFile.variables[ 'temp' ][ mem ][ loc[0] ][ loc[1] ][ level ]
         salt[mem] = netFile.variables[ 'salt' ][ mem ][ loc[0] ][ loc[1] ][ level ]
-
+        uncorr_trial[mem] = netFile.variables[ 'NO3' ][ mem ][ loc[0] ][ loc[1] ][ level ]
+        
    
-    ret = scipy.stats.spearmanr(temp, salt, axis=0)   
+    ret1 = scipy.stats.spearmanr(temp, salt, axis=0)   
+    ret2 = scipy.stats.spearmanr(temp, uncorr_trial, axis=0)  
+    ret3 = scipy.stats.spearmanr(salt, uncorr_trial, axis=0)  
+    
+    print ret1
+    print ret2
+    print ret3
+    '''
     
 
     netFile.close()
