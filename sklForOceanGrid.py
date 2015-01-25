@@ -1,11 +1,11 @@
 #!/usr/bin/python
 
-PROJ_PATH = '/home/behollis/thesis_code/code/interpRevProj/src/'
+#PROJ_PATH = '/home/behollis/thesis_code/code/interpRevProj/src/'
 import sys
 sys.path.append(PROJ_PATH)
 import netCDF4 
 import sys, struct
-import rpy2.robjects as robjects
+#import rpy2.robjects as robjects
 import random
 import math as pm
 import numpy as np
@@ -15,7 +15,7 @@ import matplotlib.cm as cm
 import pylab as p
 import mpl_toolkits.mplot3d.axes3d as p3
 import math
-import sum_of_gaussians_interpolation as sog
+#mport sum_of_gaussians_interpolation as sog
 from netcdf_reader.py import *
 from mayavi.mlab import *
 import mayavi

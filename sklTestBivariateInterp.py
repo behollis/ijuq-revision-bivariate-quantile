@@ -1,7 +1,7 @@
 #!/usr/bin/python
 import netCDF4 
 import sys, struct
-import rpy2.robjects as robjects
+#import rpy2.robjects as robjects
 import random
 import math as pm
 import numpy as np
@@ -13,7 +13,7 @@ import mpl_toolkits.mplot3d.axes3d as p3
 import math
 
 #import gaussian_fit
-import sum_of_gaussians_interpolation as sog
+#import sum_of_gaussians_interpolation as sog
 from netcdf_reader.py import *
 #from spline_cdf_curve_morphing import *
 from mayavi.mlab import *
@@ -80,7 +80,7 @@ MAX_GMM_COMP = 4#NUM_GAUSSIANS
 #part_pos_e[0][0] = SEED_LAT
 #part_pos_e[0][1] = SEED_LON
 
-r = robjects.r
+#r = robjects.r
 
 ZERO_ARRAY = np.zeros(shape=(MEM,1))
 

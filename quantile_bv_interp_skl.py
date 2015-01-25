@@ -1,7 +1,8 @@
 #!/usr/bin/python
-import netCDF4 
+#from netCDF4 import * 
+import netCDF4
 import sys, struct
-import rpy2.robjects as robjects
+#import rpy2.robjects as robjects
 import random
 import math as pm
 import numpy as np
@@ -12,17 +13,18 @@ import pylab as p
 import mpl_toolkits.mplot3d.axes3d as p3
 import math
 #import gaussian_fit
-import sum_of_gaussians_interpolation as sog
-from netcdf_reader.py import *
+#import sum_of_gaussians_interpolation as sog
+from netcdf_reader import *
 #from spline_cdf_curve_morphing import *
 from mayavi.mlab import *
 import mayavi
-from peakfinder import *
+#from peakfinder import *
 from quantile_lerp import *
 import os
 import datetime 
 import time
 from cv2 import *
+from numpy import *
 
 dt = 'stampeMicroSec_' + str(datetime.datetime.now().microsecond) + '_' 
 
@@ -46,23 +48,16 @@ reused_vel_quantile = 0
 
 DEBUG = False
 
-INPUT_DATA_DIR = '/home/behollis/thesis_data/data/in/ncdf/'
+INPUT_DATA_DIR = '/home/behollis/DATA/pierre/ocean/'
 #OUTPUT_DATA_DIR = '/home/behollis/thesis_data/data/outRev/gpDist/'
   
 FILE_NAME = 'pe_dif_sep2_98.nc' 
 FILE_NAME_CENTRAL_FORECAST = 'pe_fct_aug25_sep2.nc'
-INPUT_DATA_DIR = '/home/behollis/thesis_data/data/in/ncdf/'
-OUTPUT_DATA_DIR = '/home/behollis/thesis_data/data/outRev/pics/bv_interp/'
+OUTPUT_DATA_DIR = '/home/behollis/Dropbox/bvqiPaperCode/'
 
-EM_MAX_ITR = 5
-EM_MAX_RESTARTS = 1000
+
 DEPTH = -2.0
 INTEGRATION_DIR = 'b'
-THRESHOLD_PER = 0.9 #percentage that second greatest peak needs to be of the max peak
-NUM_GAUSSIANS = 4#2
-MAX_GMM_COMP = 4#NUM_GAUSSIANS 
-
-r = robjects.r
 
 ZERO_ARRAY = np.zeros(shape=(MEM,1))
 
@@ -335,18 +330,33 @@ def loadNetCdfData():
     pe_fct_aug25_sep2_file = INPUT_DATA_DIR + FILE_NAME_CENTRAL_FORECAST 
     
     #realizations reader 
-    rreader = NetcdfReader(pe_dif_sep2_98_file)
+    #rreader = NetcdfReader(pe_dif_sep2_98_file)
+    
+    netFileReal = netCDF4.Dataset(pe_dif_sep2_98_file)
     
     #central forecasts reader 
-    creader = NetcdfReader(pe_fct_aug25_sep2_file)
-    vclin8 = creader.readVarArray('vclin', 7)
+    #creader = NetcdfReader(pe_fct_aug25_sep2_file)
+    netFileCent = netCDF4.Dataset(pe_fct_aug25_sep2_file)
+    
+    temp8 = np.expand_dims(netFileCent.variables[ 'temp' ][ 7 ], axis=3)
+    salt8 = np.expand_dims(netFileReal.variables[ 'salt' ][ 7 ], axis=3)
+    
+    temp = np.expand_dims(netFileReal.variables['temp'][:], axis = 4)
+    salt = np.expand_dims(netFileReal.variables['salt'][:], axis = 4)
+   
+    #vclin8 = creader.readVarArray('vclin', 7)
+    #vclin8 = creader.readVarArray('vclin', 7)
     
     #deviations from central forecast for all 600 realizations
-    vclin = rreader.readVarArray('vclin')  
+    #vclin = rreader.readVarArray('vclin')  
+    
+    vclin = np.concatenate((temp, salt), axis=4)
+    vclin8 = np.concatenate((temp8, salt8), axis=3)
+    
     vclin = addCentralForecast(vclin, vclin8, level_start=SEED_LEVEL, level_end=SEED_LEVEL)  
     
         
-import rpy2.robjects.numpy2ri as rpyn
+#import rpy2.robjects.numpy2ri as rpyn
 
 ###### Quantile interp code ########
 def bilinearBivarQuantLerp(f1, f2, f3, f4, x1, y1, x2, y2, x3, y3, x4, y4, alpha, beta):
