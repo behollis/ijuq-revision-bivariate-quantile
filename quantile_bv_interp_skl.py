@@ -175,7 +175,7 @@ def getVclinSamples(gpt0, gpt1, gpt2, gpt3, half=False):
    
     return gpt0_dist, gpt1_dist, gpt2_dist, gpt3_dist
 
-def plotKDE(kde,distro, mx = (0,0), my = (0, 0), title = '', co = 'green'):
+def plotKDE(var1, var2, kde,distro, mx = (0,0), my = (0, 0), title = '', co = 'green'):
     
     global DIV, DIVR
     
@@ -193,8 +193,8 @@ def plotKDE(kde,distro, mx = (0,0), my = (0, 0), title = '', co = 'green'):
     z = z.reshape(DIVR, DIVR)
     
     AX = FIG.gca(projection='3d')
-    AX.set_xlabel('u')
-    AX.set_ylabel('v')
+    AX.set_xlabel(var1)
+    AX.set_ylabel(var2)
     AX.set_xlim(x_flat.max(), x_flat.min())
     AX.set_ylim(y_flat.min(), y_flat.max())
     AX.set_zlabel('density')
@@ -322,7 +322,7 @@ def remapGridData():
                     vclin_half[idx][mlat][mlon][0] = vclin[idx][lat][lon][SEED_LEVEL][0]
                     vclin_half[idx][mlat][mlon][1] = vclin[idx][lat][lon][SEED_LEVEL][1]
         
-def loadNetCdfData():
+def loadNetCdfData(var1, var2):
     global vclin
     
     #realizations file 
@@ -338,11 +338,11 @@ def loadNetCdfData():
     #creader = NetcdfReader(pe_fct_aug25_sep2_file)
     netFileCent = netCDF4.Dataset(pe_fct_aug25_sep2_file)
     
-    temp8 = np.expand_dims(netFileCent.variables[ 'temp' ][ 7 ], axis=3)
-    salt8 = np.expand_dims(netFileReal.variables[ 'salt' ][ 7 ], axis=3)
+    temp8 = np.expand_dims(netFileCent.variables[ var2 ][ 7 ], axis=3)
+    salt8 = np.expand_dims(netFileReal.variables[ var1 ][ 7 ], axis=3)
     
-    temp = np.expand_dims(netFileReal.variables['temp'][:], axis = 4)
-    salt = np.expand_dims(netFileReal.variables['salt'][:], axis = 4)
+    temp = np.expand_dims(netFileReal.variables[var2][:], axis = 4)
+    salt = np.expand_dims(netFileReal.variables[var1][:], axis = 4)
    
     #vclin8 = creader.readVarArray('vclin', 7)
     #vclin8 = creader.readVarArray('vclin', 7)
@@ -350,8 +350,8 @@ def loadNetCdfData():
     #deviations from central forecast for all 600 realizations
     #vclin = rreader.readVarArray('vclin')  
     
-    vclin = np.concatenate((temp, salt), axis=4)
-    vclin8 = np.concatenate((temp8, salt8), axis=3)
+    vclin = np.concatenate((salt, temp), axis=4)
+    vclin8 = np.concatenate((salt8, temp8), axis=3)
     
     vclin = addCentralForecast(vclin, vclin8, level_start=SEED_LEVEL, level_end=SEED_LEVEL)  
     
@@ -784,13 +784,13 @@ def computeDistroFunction(x_pos,y_pos,z_pos, mmx, mmy):
     #print 'type? -> ' + str(interp_type)
     return distro_eval, interp_type, success
 
-def plotXYZScatter((u_min,u_max),(v_min, v_max), x_pos,y_pos,z_pos, title = '', arr=[]):
+def plotXYZScatter(var1, var2, (u_min,u_max),(v_min, v_max), x_pos,y_pos,z_pos, title = '', arr=[]):
     
     fig = plt.figure()
     ax = fig.gca(projection='3d')
     surf = ax.scatter(list(x_pos), list(y_pos), list(z_pos),s=0.05)
-    ax.set_xlabel('u')
-    ax.set_ylabel('v')
+    ax.set_xlabel(var1)
+    ax.set_ylabel(var2)
     
     ax.set_xlim(u_max, u_min)
     ax.set_ylim(v_min, v_max)
@@ -800,7 +800,7 @@ def plotXYZScatter((u_min,u_max),(v_min, v_max), x_pos,y_pos,z_pos, title = '', 
     plt.savefig(OUTPUT_DATA_DIR + str(title) + "scatter.png")
     #plt.show()
     
-def plotXYZSurf(mmx, mmy, surface, title = '', arr=[], col='0.75'):
+def plotXYZSurf(var1, var2, mmx, mmy, surface, title = '', arr=[], col='0.75'):
     
     global DIV, DIVR
     
@@ -811,8 +811,8 @@ def plotXYZSurf(mmx, mmy, surface, title = '', arr=[], col='0.75'):
     X,Y = np.meshgrid(x_flat,y_flat)
     
     AX = FIG.gca(projection='3d')
-    AX.set_xlabel('u')
-    AX.set_ylabel('v')
+    AX.set_xlabel(var1)
+    AX.set_ylabel(var2)
     AX.set_xlim(x_flat.max(), x_flat.min())
     AX.set_ylim(y_flat.min(), y_flat.max())
     AX.set_zlabel('density')
@@ -846,14 +846,21 @@ def convertNumpyArrayToOpenCVSignature(numpyMat):
     return a32
     
 def main():
-    loadNetCdfData()
+    
+    #var1 = 'salt'
+    #var2 = 'temp'
+    
+    var1 = 'NO3'
+    var2 = 'temp'
+    
+    loadNetCdfData(var1, var2)
     remapGridData()
     
     createGlobalKDEArray(LAT,LON)
     createGlobalQuantileArray(LAT,LON)
     
-    ppos = [0,36]
-    #ppos = [44,30]
+    #ppos = [0,36]
+    ppos = [44,30]
     
     kdes = []
     
@@ -878,8 +885,9 @@ def main():
         mfunc1 = getKDEGriddata((x_min,x_max), (y_min,y_max), kde)
 
         #http://stackoverflow.com/questions/15706339/how-to-compute-emd-for-2-numpy-arrays-i-e-histogram-using-opencv
+        
+        
         sigKDE = convertNumpyArrayToOpenCVSignature(mfunc1)
-
         emdKDE = cv.CalcEMD2(sigKDE, sigKDE, cv.CV_DIST_L2)
         
         samples_arr, evalfunc = interpFromQuantiles3(ppos=[xpos,ppos[1]], ignore_cache = 'True', half=True)
@@ -896,12 +904,12 @@ def main():
         emdQuant = cv.CalcEMD2(sigKDE, sigQuant, cv.CV_DIST_L2)
         
         titleKDE = dt + str(xpos) + '_' + str(ppos[1]) + '_kde_emd_' + str(emdKDE) 
-        titleQuantInterp = dt + str(xpos) + '_' + str(ppos[1]) + '_q_emd_'   + str(emdQuant) 
+        titleQuantInterp = dt + str(xpos) + '_' + str(ppos[1]) + '_q_emd_' + str(emdQuant) 
         
         #plot interpolants in their range
-        plotKDE(kde,distro,(x_min,x_max), (y_min,y_max), titleKDE, co=green)
-        plotXYZSurf((x_min,x_max), (y_min,y_max), distro2, titleQuantInterp, samples_arr, col=blue)
-        plotXYZScatter((x_min,x_max), (y_min,y_max), evalfunc[0],evalfunc[1],evalfunc[2], title=dt + str(xpos) + \
+        plotKDE(var1, var2, kde,distro,(x_min,x_max), (y_min,y_max), titleKDE, co=green)
+        plotXYZSurf(var1, var2, (x_min,x_max), (y_min,y_max), distro2, titleQuantInterp, samples_arr, col=blue)
+        plotXYZScatter(var1, var2, (x_min,x_max), (y_min,y_max), evalfunc[0],evalfunc[1],evalfunc[2], title=dt + str(xpos) + \
                        '_' + str(ppos[1]) + '_Interp_', arr=samples_arr )
              
         #find full resolution, non-interpolated distribution       
@@ -921,10 +929,10 @@ def main():
             actualQuantSig = convertNumpyArrayToOpenCVSignature(distro2_a)
             emdQuantA = cv.CalcEMD2(sigKDE, actualQuantSig, cv.CV_DIST_L2)
             
-            title4_a = dt + str(xpos) + '_' + str(ppos[1]) + '_q_not_interpolated_emd_'   + str(emdQuantA)
+            title4_a = dt + str(xpos) + '_' + str(ppos[1]) + '_q_not_interpolated_emd_' + str(emdQuantA)
             
-            plotXYZSurf((x_min,x_max), (y_min,y_max), distro2_a, title4_a, samples_arr_a, col=blue)
-            plotXYZScatter((x_min,x_max), (y_min,y_max), evalfunc_a[0],evalfunc_a[1],evalfunc_a[2], title=dt + str(xpos) + \
+            plotXYZSurf(var1, var2, (x_min,x_max), (y_min,y_max), distro2_a, title4_a, samples_arr_a, col=blue)
+            plotXYZScatter(var1, var2, (x_min,x_max), (y_min,y_max), evalfunc_a[0],evalfunc_a[1],evalfunc_a[2], title=dt + str(xpos) + \
                            '_' + str(ppos[1]) + '_NOT_Interp_', arr=samples_arr_a )
     
 
