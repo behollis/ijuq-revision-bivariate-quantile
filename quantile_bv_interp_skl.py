@@ -338,11 +338,13 @@ def loadNetCdfData(var1, var2):
     #creader = NetcdfReader(pe_fct_aug25_sep2_file)
     netFileCent = netCDF4.Dataset(pe_fct_aug25_sep2_file)
     
+    SCALE = 10.0
+    
     temp8 = np.expand_dims(netFileCent.variables[ var2 ][ 7 ], axis=3)
-    salt8 = np.expand_dims(netFileReal.variables[ var1 ][ 7 ], axis=3)
+    salt8 = np.expand_dims(SCALE*netFileReal.variables[ var1 ][ 7 ], axis=3)
     
     temp = np.expand_dims(netFileReal.variables[var2][:], axis = 4)
-    salt = np.expand_dims(netFileReal.variables[var1][:], axis = 4)
+    salt = np.expand_dims(SCALE*netFileReal.variables[var1][:], axis = 4)
    
     #vclin8 = creader.readVarArray('vclin', 7)
     #vclin8 = creader.readVarArray('vclin', 7)
@@ -847,11 +849,11 @@ def convertNumpyArrayToOpenCVSignature(numpyMat):
     
 def main():
     
-    #var1 = 'salt'
-    #var2 = 'temp'
-    
-    var1 = 'NO3'
+    var1 = 'salt'
     var2 = 'temp'
+    
+    #var1 = 'NO3'
+    #var2 = 'temp'
     
     loadNetCdfData(var1, var2)
     remapGridData()
@@ -869,18 +871,25 @@ def main():
     blue = '#87ceeb'
     red = '#f08080'
     purple = '#ee82ee'
+    
+    #DPER = 0.0 # to avoid cut off in surface interp
       
     for idx in range(0,3):
-        xpos = ppos[0] + 1.0*idx
+        xpos = ppos[0] + float(1.0*idx)
         
         #find KDE benchmark
         distro = getVclinSamplesSingle([xpos,ppos[1]])
-    
+        
         kde = stats.kde.gaussian_kde(distro)
-        x_min = np.asarray(distro[0]).min()
+        x_min = np.asarray(distro[0]).min() 
         x_max = np.asarray(distro[0]).max()
         y_min = np.asarray(distro[1]).min()
         y_max = np.asarray(distro[1]).max()
+        
+        #x_min -= DPER*x_min
+        #x_max += DPER*x_max
+        #y_min -= DPER*y_min
+        #y_max += DPER*y_max
         
         mfunc1 = getKDEGriddata((x_min,x_max), (y_min,y_max), kde)
 
@@ -892,10 +901,15 @@ def main():
         
         samples_arr, evalfunc = interpFromQuantiles3(ppos=[xpos,ppos[1]], ignore_cache = 'True', half=True)
         
-        x_min = np.asarray(evalfunc[0]).min()
+        x_min = np.asarray(evalfunc[0]).min() 
         x_max = np.asarray(evalfunc[0]).max()
         y_min = np.asarray(evalfunc[1]).min()
         y_max = np.asarray(evalfunc[1]).max()
+        
+        #x_min -= DPER*x_min
+        #x_max += DPER*x_max
+        #y_min -= DPER*y_min
+        #y_max += DPER*y_max
         
         distro2, interpType, suc = computeDistroFunction(evalfunc[0],evalfunc[1],evalfunc[2], \
                                                          (x_min,x_max), (y_min,y_max))
@@ -913,13 +927,18 @@ def main():
                        '_' + str(ppos[1]) + '_Interp_', arr=samples_arr )
              
         #find full resolution, non-interpolated distribution       
-        if xpos == 1.0:
+        if xpos == 45.0:
             #find quantile approx (include surface interpolant choice)
             
             x_min = np.asarray(distro[0]).min()
             x_max = np.asarray(distro[0]).max()
             y_min = np.asarray(distro[1]).min()
             y_max = np.asarray(distro[1]).max()
+            
+            #x_min -= DPER*x_min
+            #x_max += DPER*x_max
+            #y_min -= DPER*y_min
+            #y_max += DPER*y_max
             
             samples_arr_a, evalfunc_a = interpFromQuantiles3(ppos=[xpos,ppos[1]], ignore_cache = 'True', half=False)
             
